@@ -151,13 +151,13 @@ void ADynamicMeshBaseActor::RegenerateSourceMesh(FDynamicMesh3& MeshOut)
 		FString UsePath = ImportPath;
 		if (FPaths::FileExists(UsePath) == false && FPaths::IsRelative(UsePath))
 		{
-			UsePath = FPaths::ProjectContentDir() + ImportPath;
+			UsePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir() + ImportPath);
 		}
 
 		MeshOut = FDynamicMesh3();
 		if ( ! RTGUtils::ReadOBJMesh(UsePath, MeshOut, true, true, true, bReverseOrientation))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Error reading mesh file %s"), *UsePath);
+			UE_LOG(LogTemp, Error, TEXT("[ADynamicMeshBaseActor::RegenerateSourceMesh]Error reading mesh file %s"), *UsePath);
 			FSphereGenerator SphereGen;
 			SphereGen.NumPhi = SphereGen.NumTheta = 8;
 			SphereGen.Radius = this->MinimumRadius;
@@ -370,9 +370,10 @@ void ADynamicMeshBaseActor::BooleanWithMesh(ADynamicMeshBaseActor* OtherMeshActo
 bool ADynamicMeshBaseActor::ImportMesh(FString Path, bool bFlipOrientation, bool bRecomputeNormals)
 {
 	FDynamicMesh3 ImportedMesh;
+	Path = FPaths::ConvertRelativePathToFull(Path);
 	if (!RTGUtils::ReadOBJMesh(Path, ImportedMesh, true, true, true, bFlipOrientation))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Error reading mesh file %s"), *Path);
+		UE_LOG(LogTemp, Error, TEXT("[ADynamicMeshBaseActor::ImportMesh] Error reading mesh file %s"), *Path);
 		return false;
 	}
 

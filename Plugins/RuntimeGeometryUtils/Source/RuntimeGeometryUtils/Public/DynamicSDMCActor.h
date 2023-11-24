@@ -6,8 +6,6 @@
 #include "DynamicMeshBaseActor.h"
 #include "DynamicSDMCActor.generated.h"
 
-class FDynamicMesh3;
-
 UCLASS()
 class RUNTIMEGEOMETRYUTILS_API ADynamicSDMCActor : public ADynamicMeshBaseActor
 {

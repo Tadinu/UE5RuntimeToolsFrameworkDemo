@@ -65,6 +65,7 @@ public:
 
 
 protected:
+	UPROPERTY()
 	URuntimeToolsFrameworkSubsystem* ToolsSystem;
 
 	EToolActorInteractionMode CurrentInteractionMode = EToolActorInteractionMode::NoInteraction;

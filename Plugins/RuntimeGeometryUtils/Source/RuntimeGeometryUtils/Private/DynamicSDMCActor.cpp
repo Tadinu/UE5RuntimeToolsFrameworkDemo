@@ -5,6 +5,7 @@
 #include "ShapeApproximation/SimpleShapeSet3.h"
 #include "Physics/ComponentCollisionUtil.h"
 #include "Materials/Material.h"
+#include "MaterialDomain.h"
 
 using namespace UE::Geometry;
 

@@ -2,6 +2,7 @@
 
 #include "RuntimeMeshSceneSubsystem.h"
 #include "GameFramework/GameModeBase.h"
+#include "MaterialDomain.h"
 #include "Materials/Material.h"
 
 #define LOCTEXT_NAMESPACE "URuntimeMeshSceneSubsystem"
@@ -25,6 +26,7 @@ void URuntimeMeshSceneSubsystem::InitializeSingleton(URuntimeMeshSceneSubsystem*
 	WireframeMaterial = (WireframeMaterial) ? WireframeMaterial : UMaterial::GetDefaultMaterial(MD_Surface);
 	InstanceSingleton->WireframeMaterial = WireframeMaterial;
 	GEngine->WireframeMaterial = WireframeMaterial;
+	UE_LOG(LogTemp, Warning, TEXT("URuntimeMeshSceneSubsystem::InitializeSingleton"));
 }
 
 
@@ -48,7 +50,7 @@ void URuntimeMeshSceneSubsystem::SetCurrentTransactionsAPI(IToolsContextTransact
 
 URuntimeMeshSceneObject* URuntimeMeshSceneSubsystem::CreateNewSceneObject()
 {
-	URuntimeMeshSceneObject* SceneObject = NewObject<URuntimeMeshSceneObject>(this);
+	URuntimeMeshSceneObject* SceneObject = NewObject<URuntimeMeshSceneObject>(this, TEXT("SceneObject"));
 	AddSceneObjectInternal(SceneObject, false);
 
 	if (TransactionsAPI)

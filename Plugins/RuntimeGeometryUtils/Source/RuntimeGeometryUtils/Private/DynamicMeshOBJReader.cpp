@@ -23,14 +23,11 @@ bool RTGUtils::ReadOBJMesh(
 	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, inputfile.c_str());
 
 	if (!warn.empty()) {
-		UE_LOG(LogTemp, Display, TEXT("%s"), warn.c_str());
-	}
-
-	if (!err.empty()) {
-		UE_LOG(LogTemp, Display, TEXT("%s"), err.c_str());
+		UE_LOG(LogTemp, Warning, TEXT("[RTGUtils::ReadOBJMesh] %s"), *FString(warn.c_str()));
 	}
 
 	if (!ret) {
+		UE_LOG(LogTemp, Error, TEXT("[RTGUtils::ReadOBJMesh] %s"), *FString(err.c_str()));
 		return false;
 	}
 

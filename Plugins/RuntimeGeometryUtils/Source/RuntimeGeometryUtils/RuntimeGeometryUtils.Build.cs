@@ -29,14 +29,10 @@ public class RuntimeGeometryUtils : ModuleRules
 				"GeometryCore",
 				"DynamicMesh",
 				"GeometryFramework",
-				"ProceduralMeshComponent"
+				"ProceduralMeshComponent",
+				"ModelingComponents"
 			}
 			);
-
-        if ((Target.Platform == UnrealTargetPlatform.Win64)) {
-			PublicDependencyModuleNames.Add("ModelingComponents");
-        }
-
 
         PrivateDependencyModuleNames.AddRange(
 			new string[]

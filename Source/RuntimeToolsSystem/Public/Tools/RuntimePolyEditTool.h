@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BaseTools/SingleTargetWithSelectionTool.h"
 #include "EditMeshPolygonsTool.h"
 #include "RuntimePolyEditTool.generated.h"
 
@@ -8,7 +9,7 @@ class RUNTIMETOOLSSYSTEM_API URuntimePolyEditToolBuilder : public UEditMeshPolyg
 {
 	GENERATED_BODY()
 public:
-	virtual USingleSelectionMeshEditingTool* CreateNewTool(const FToolBuilderState& SceneState) const override;
+	virtual USingleTargetWithSelectionTool* CreateNewTool(const FToolBuilderState& SceneState) const override;
 };
 
 

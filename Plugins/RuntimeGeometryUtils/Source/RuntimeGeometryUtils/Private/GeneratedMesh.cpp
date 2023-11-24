@@ -84,9 +84,10 @@ UGeneratedMesh* UGeneratedMesh::InitializeFrom(ADynamicMeshBaseActor* MeshActor)
 bool UGeneratedMesh::ReadMeshFromFile(FString Path, bool bFlipOrientation)
 {
 	FDynamicMesh3 ImportedMesh;
+	Path = FPaths::ConvertRelativePathToFull(Path);
 	if (!RTGUtils::ReadOBJMesh(Path, ImportedMesh, true, true, true, bFlipOrientation))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Error reading mesh file %s"), *Path);
+		UE_LOG(LogTemp, Error, TEXT("[UGeneratedMesh::ReadMeshFromFile]Error reading mesh file %s"), *Path);
 		return false;
 	}
 

@@ -172,6 +172,7 @@ protected:
 	TSharedPtr<FRuntimeToolsContextTransactionImpl> ContextTransactionsAPI;
 
 	void InternalConsistencyChecks();
+	UPROPERTY()
 	bool bIsShuttingDown = false;
 
 	void OnToolStarted(UInteractiveToolManager* Manager, UInteractiveTool* Tool);
@@ -184,9 +185,11 @@ protected:
 
 	friend class AToolsContextActor;
 
+	UPROPERTY()
 	FVector2D PrevMousePosition = FVector2D::ZeroVector;
 
 	FInputDeviceState CurrentMouseState;
+	UPROPERTY()
 	bool bPendingMouseStateChange = false;
 
 	FViewCameraState CurrentViewCameraState;
@@ -199,5 +202,4 @@ protected:
 
 	UPROPERTY()
 	TArray<UObject*> PropertySetKeepAlives;
-
 };

@@ -6,7 +6,7 @@
 #define LOCTEXT_NAMESPACE "URuntimeEditMeshPolygonsTool"
 
 
-USingleSelectionMeshEditingTool* URuntimePolyEditToolBuilder::CreateNewTool(const FToolBuilderState& SceneState) const
+USingleTargetWithSelectionTool* URuntimePolyEditToolBuilder::CreateNewTool(const FToolBuilderState& SceneState) const
 {
 	URuntimePolyEditTool* PolyEditTool = NewObject<URuntimePolyEditTool>(SceneState.ToolManager);
 	PolyEditTool->LocalTargetWorld = SceneState.World;
@@ -18,7 +18,7 @@ USingleSelectionMeshEditingTool* URuntimePolyEditToolBuilder::CreateNewTool(cons
 
 void URuntimePolyEditTool::Setup()
 {
-	UEditMeshPolygonsTool::Setup();
+	Super::Setup();
 
 	// mirror properties we want to expose at runtime 
 	RuntimeProperties = NewObject<URuntimePolyEditToolProperties>(this);

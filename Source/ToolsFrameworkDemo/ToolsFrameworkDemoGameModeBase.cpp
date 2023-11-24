@@ -13,12 +13,14 @@
 #include "Tools/RuntimeRemeshMeshTool.h"
 #include "Tools/RuntimeMeshBooleanTool.h"
 #include "Tools/RuntimePolyEditTool.h"
+#include "RuntimeToolsFramework/ToolsContextActor.h"
 
 
 AToolsFrameworkDemoGameModeBase::AToolsFrameworkDemoGameModeBase()
 {
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bCanEverTick = true;
+	DefaultPawnClass = AToolsContextActor::StaticClass();
 }
 
 

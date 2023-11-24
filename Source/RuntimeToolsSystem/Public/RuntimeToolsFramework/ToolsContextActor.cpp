@@ -22,6 +22,7 @@ void AToolsContextActor::BeginPlay()
 	UGameInstance* GameInstance = GetGameInstance();
 	ToolsSystem = UGameInstance::GetSubsystem<URuntimeToolsFrameworkSubsystem>(GameInstance);
 	ToolsSystem->SetContextActor(this);
+	UE_LOG(LogTemp, Warning, TEXT("ToolsSystem's ContextActor set"));
 }
 
 void AToolsContextActor::EndPlay(const EEndPlayReason::Type EndPlayReason)

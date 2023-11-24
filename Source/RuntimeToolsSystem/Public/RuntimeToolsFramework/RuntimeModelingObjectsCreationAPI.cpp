@@ -35,6 +35,7 @@ bool URuntimeModelingObjectsCreationAPI::Deregister(UInteractiveToolsContext* To
 
 FCreateMeshObjectResult URuntimeModelingObjectsCreationAPI::CreateMeshObject(const FCreateMeshObjectParams& CreateMeshParams)
 {
+	check(URuntimeMeshSceneSubsystem::Get());
 	// create new SceneObject
 	URuntimeMeshSceneObject* SceneObject = URuntimeMeshSceneSubsystem::Get()->CreateNewSceneObject();
 

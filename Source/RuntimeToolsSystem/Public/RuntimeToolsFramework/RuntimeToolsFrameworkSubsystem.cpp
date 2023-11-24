@@ -18,6 +18,7 @@
 #include "ToolTargetManager.h"
 #include "RuntimeDynamicMeshComponentToolTarget.h"
 
+#include "MaterialDomain.h"
 #include "Materials/Material.h"
 
 #include "BaseGizmos/GizmoRenderingUtil.h"
@@ -207,12 +208,13 @@ void URuntimeToolsFrameworkSubsystem::InitializeToolsContext(UWorld* TargetWorld
 {
 	TargetWorld = TargetWorldIn;
 
-	ToolsContext = NewObject<UInteractiveToolsContext>();
+	ToolsContext = NewObject<UInteractiveToolsContext>(this, TEXT("ToolsContext"));
 	
 	ContextQueriesAPI = MakeShared<FRuntimeToolsContextQueriesImpl>(ToolsContext, TargetWorld);
 	if (ContextActor)
 	{
 		ContextQueriesAPI->SetContextActor(ContextActor);
+		UE_LOG(LogTemp, Warning, TEXT("[URuntimeToolsFrameworkSubsystem::InitializeToolsContext] ContextActor %s"), *ContextActor->GetName());
 	}
 
 	ContextTransactionsAPI = MakeShared<FRuntimeToolsContextTransactionImpl>();
@@ -224,12 +226,12 @@ void URuntimeToolsFrameworkSubsystem::InitializeToolsContext(UWorld* TargetWorld
 	ToolsContext->ToolManager->OnToolEnded.AddUObject(this, &URuntimeToolsFrameworkSubsystem::OnToolEnded);
 
 	// create scene history
-	SceneHistory = NewObject<USceneHistoryManager>(this);
+	SceneHistory = NewObject<USceneHistoryManager>(this, TEXT("SceneHistory"));
 	SceneHistory->OnHistoryStateChange.AddUObject(this, &URuntimeToolsFrameworkSubsystem::OnSceneHistoryStateChange);
 
 
 	// register selection interaction
-	SelectionInteraction = NewObject<USceneObjectSelectionInteraction>();
+	SelectionInteraction = NewObject<USceneObjectSelectionInteraction>(this, TEXT("SelectionInteraction"));
 	SelectionInteraction->Initialize([this]() 
 	{
 		return HaveActiveTool() == false;
@@ -238,7 +240,7 @@ void URuntimeToolsFrameworkSubsystem::InitializeToolsContext(UWorld* TargetWorld
 
 
 	// create transform interaction
-	TransformInteraction = NewObject<USceneObjectTransformInteraction>();
+	TransformInteraction = NewObject<USceneObjectTransformInteraction>(this, TEXT("TransformInteraction"));
 	TransformInteraction->Initialize([this]()
 	{
 		return HaveActiveTool() == false;
@@ -247,8 +249,9 @@ void URuntimeToolsFrameworkSubsystem::InitializeToolsContext(UWorld* TargetWorld
 
 	// create PDI rendering bridge Component
 	FActorSpawnParameters SpawnInfo;
-	PDIRenderActor = TargetWorld->SpawnActor<AActor>(FVector::ZeroVector, FRotator(0,0,0), SpawnInfo);
-	PDIRenderComponent = NewObject<UToolsContextRenderComponent>(PDIRenderActor);
+	SpawnInfo.Name = TEXT("PDIRenderActor");
+	PDIRenderActor = TargetWorld->SpawnActor<AActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnInfo);
+	PDIRenderComponent = NewObject<UToolsContextRenderComponent>(PDIRenderActor, TEXT("PDIRenderComponent"));
 	PDIRenderActor->SetRootComponent(PDIRenderComponent);
 	PDIRenderComponent->RegisterComponent();
 
@@ -261,7 +264,7 @@ void URuntimeToolsFrameworkSubsystem::InitializeToolsContext(UWorld* TargetWorld
 
 	// register target factory for dynamic mesh components
 	//ToolsContext->TargetManager->AddTargetFactory(NewObject<URuntimeDynamicMeshComponentToolTargetFactory>(ToolsContext->ToolManager));
-	ToolsContext->TargetManager->AddTargetFactory( NewObject<URuntimeDynamicMeshComponentToolTargetFactory>(this) );
+	ToolsContext->TargetManager->AddTargetFactory( NewObject<URuntimeDynamicMeshComponentToolTargetFactory>(this, TEXT("ToolTargetFactory")) );
 
 	// register transform gizmo util helper
 	UE::TransformGizmoUtil::RegisterTransformGizmoContextObject(ToolsContext);
@@ -384,10 +387,13 @@ public:
 
 
 
-PRAGMA_DISABLE_OPTIMIZATION
+UE_DISABLE_OPTIMIZATION
 void URuntimeToolsFrameworkSubsystem::Tick(float DeltaTime)
 {
-	if (ensure(ContextActor) == false) return;
+	if (nullptr == ContextActor) 
+	{
+		return;
+	}
 
 	// no longer exists...
 	//GizmoRenderingUtil::SetGlobalFocusedEditorSceneView(nullptr);
@@ -527,7 +533,7 @@ void URuntimeToolsFrameworkSubsystem::Tick(float DeltaTime)
 		FlushRenderingCommands();
 	}
 }
-PRAGMA_ENABLE_OPTIMIZATION
+UE_ENABLE_OPTIMIZATION
 
 void URuntimeToolsFrameworkSubsystem::SetContextActor(AToolsContextActor* ActorIn)
 {
@@ -578,30 +584,32 @@ bool URuntimeToolsFrameworkSubsystem::CanActivateToolByName(FString Name)
 
 UInteractiveTool* URuntimeToolsFrameworkSubsystem::BeginToolByName(FString Name)
 {
-	if (ToolsContext && ToolsContext->ToolManager)
+	if (nullptr == ToolsContext)
 	{
-		bool bFound = ToolsContext->ToolManager->SelectActiveToolType(EToolSide::Mouse, Name);
-		if (bFound)
+		UE_LOG(LogTemp, Error, TEXT("URuntimeToolsFrameworkSubsystem::BeginToolByName - Tools Context is null!"));
+		return nullptr;
+	}
+
+	auto& toolManager = ToolsContext->ToolManager;
+	if(nullptr == toolManager)
+	{
+		UE_LOG(LogTemp, Error, TEXT("URuntimeToolsFrameworkSubsystem::BeginToolByName - ToolManager is null!"));
+	}
+	
+	if (ToolsContext->ToolManager->SelectActiveToolType(EToolSide::Left, Name))
+	{
+		if (ToolsContext->ToolManager->ActivateTool(EToolSide::Left))
 		{
-			bool bActivated = ToolsContext->ToolManager->ActivateTool(EToolSide::Mouse);
-			if (bActivated)
-			{
-				UInteractiveTool* NewTool = ToolsContext->ToolManager->GetActiveTool(EToolSide::Mouse);
-				return NewTool;
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("URuntimeToolsFrameworkSubsystem::BeginToolByName - Failed to Activate Tool of type %s!"), *Name);
-			}
+			return ToolsContext->ToolManager->GetActiveTool(EToolSide::Left);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("URuntimeToolsFrameworkSubsystem::BeginToolByName - Tool Type %s Not Registered!"), *Name);
+			UE_LOG(LogTemp, Error, TEXT("URuntimeToolsFrameworkSubsystem::BeginToolByName - Failed to Activate Tool of type %s!"), *Name);
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("URuntimeToolsFrameworkSubsystem::BeginToolByName - Tools Context is not initialized!"));
+		UE_LOG(LogTemp, Error, TEXT("URuntimeToolsFrameworkSubsystem::BeginToolByName - Tool Type %s Not Registered!"), *Name);
 	}
 	return nullptr;
 }
@@ -734,6 +742,7 @@ URuntimeMeshSceneObject* URuntimeToolsFrameworkSubsystem::ImportMeshSceneObject(
 		ImportMesh->AppendSphere(200, 8, 8);
 	}
 
+	check(URuntimeMeshSceneSubsystem::Get());
 	URuntimeMeshSceneObject* SceneObject = URuntimeMeshSceneSubsystem::Get()->CreateNewSceneObject();
 	SceneObject->Initialize(TargetWorld, ImportMesh->GetMesh().Get());
 
